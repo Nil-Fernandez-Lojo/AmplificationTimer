@@ -1,5 +1,10 @@
 import math
 
+# Decorator used to add an equality methods of own objects. 
+# This equality method checks that all non callable and no dunders attributes are equal
+# Moreover 2 attributes that are NaN are also said to be equal
+
+
 def class_equality_attributes(x):
 	def get_non_callable_attributes_and_remove_dunders(obj):
 		out = []
