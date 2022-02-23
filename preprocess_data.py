@@ -1,7 +1,7 @@
 # author: Nil Fernandez Lojo
 import pandas as pd
 from pathlib import Path
-from sample import Sample
+from Sample import Sample
 from chromosome import Chromosome
 from pyensembl import EnsemblRelease
 from models import Model1, Model2,Model3
@@ -44,8 +44,7 @@ config['chromosome_arm_length'].rename(columns={'chrom': 'chromosome'},inplace=T
 N_samples = config['summary_table'].shape[0]
 for i in range(13,N_samples):	
 	print(i, config['summary_table']['samplename'][i])
-	s = Sample(config,config['summary_table']['samplename'][i],save=True)
-	continue
+	s = Sample(config,config['summary_table']['samplename'][i],save=False)
 	x = Model1(s.amplifications[0],s.mutation_rate,s.clinical_data)
 	t = np.linspace(0,1,100)
 	plt.plot(t,x.get_analytical_posterior(t))

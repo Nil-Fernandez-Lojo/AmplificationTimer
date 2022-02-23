@@ -1,7 +1,7 @@
 from decorator_equality import class_equality_attributes
-from import Chromosome
-from import Position
-
+from chromosome import Chromosome
+from position import Position
+import math
 
 @class_equality_attributes
 class Gene():

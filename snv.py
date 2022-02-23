@@ -2,7 +2,7 @@ from decorator_equality import class_equality_attributes
 
 @class_equality_attributes
 class SNV():
-	def __init__(self,chromosome,pos,ref_count,alt_count,ref_base,alt_base,config):
+	def __init__(self,chromosome,pos,ref_count,alt_count,ref_base,alt_base):
 		self.chromosome = chromosome
 		self.pos = pos
 		self.ref_count = ref_count

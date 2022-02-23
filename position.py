@@ -27,6 +27,7 @@ class Position:
 	def __init__(self,chromosome,position,config):
 		self.chromosome = chromosome
 		self.position = position
+		self.absolute_position = config['cum_length_chr'][chromosome.c-1] + position
 
 		chr_arm_l = config['chromosome_arm_length']
 		chr_p_arm_l = chr_arm_l.loc[chr_arm_l['arm'] == 'p']

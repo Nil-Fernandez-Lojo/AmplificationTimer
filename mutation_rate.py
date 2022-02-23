@@ -31,9 +31,17 @@ class Mutation_rate():
 		self.l_1_0 = l_1_0
 		self.n_1_1 = n_1_1
 		self.l_1_1 = l_1_1
+		if (self.l_1_0 == 0) and (self.l_1_1 == 0):
+			print("Warning, no segments of with copy number 1+1 and 1+0")
 
 	def get_ML(self):
-		return (self.n_1_0+self.n_1_1)/(self.l_1_0+2*self.l_1_1)
+		#default value if no segment of of copy number 1+1 and 1+0, is 10^-6 TODO: change this
+		if self.l_1_0+2*self.l_1_1 == 0:
+			return 10**(-6)
+		elif self.n_1_0+2*self.n_1_1 == 0:
+			return 10**(-8)
+		else:
+			return (self.n_1_0+self.n_1_1)/(self.l_1_0+2*self.l_1_1)
 	
 	def get_beta_posterior_parameters(self):
 		return (self.n_1_0+self.n_1_1+1,self.l_1_0+2*self.l_1_1+1)

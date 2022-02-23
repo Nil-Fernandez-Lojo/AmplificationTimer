@@ -5,7 +5,6 @@ from scipy.special import betainc
 from scipy.special import beta as beta_function
 from scipy.stats import beta,binomtest,binom
 import matplotlib.pyplot as plt
-
 import theano.tensor as tt
 
 p_value_threshold = 0.05
@@ -52,7 +51,6 @@ class Model1(Model):
 			p_1 = self.rho/(T*self.rho+ploidy_nc*(1-self.rho))
 			for SNV in segment.SNVs:
 				if (SNV.alt_count + SNV.ref_count == 0): continue
-				print("d", SNV.alt_count, "D", SNV.alt_count + SNV.ref_count)
 				if filter_APOBEC:
 					if binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, p_all,alternative = 'less').pvalue > p_value_threshold:
 						self.N +=1
@@ -77,8 +75,9 @@ class Model1(Model):
 		return(self.mu_clonal_ML*beta.pdf(t*self.mu_clonal_ML, self.N, self.L-self.N)/(betainc(self.N, self.L-self.N,self.mu_clonal_ML)))
 
 
+
 class Model2(Model):
-	def __init__(self,amplification,mu,subclonal_structure,subclonality_modelled,cores,filter_APOBEC):
+	def __init__(self,amplification,mu,subclonal_structure,subclonality_modelled,cores):
 		Model.__init__(self, amplification, mu,subclonal_structure,subclonality_modelled,cores)
 		self.n_segments = len(amplification.segments)
 		n_snvs = 0
@@ -106,11 +105,13 @@ class Model2(Model):
 			ploidy_nc = segment.get_ploidy_healthy()
 			#self.N0[i] = segment.get_length()-len(segment.SNVs)
 			self.M_segment[i] = segment.major_cn
+			SNVs_kept = []
 			for SNV in segment.SNVs:
 				q_clonal_one = self.rho/((segment.major_cn + segment.minor_cn)*self.rho+ploidy_nc*(1-self.rho)) # 1 copy clonal
 				q_clonal_all = q_clonal_one * segment.major_cn #all copies clonal
 				if (SNV.alt_count + SNV.ref_count == 0): continue
-				if (not filter_APOBEC) or (binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_all,alternative = 'less').pvalue > p_value_threshold ) or (binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_one,alternative = 'greater').pvalue > p_value_threshold ):
+				if (binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_all,alternative = 'less').pvalue > p_value_threshold ) or (binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_one,alternative = 'greater').pvalue > p_value_threshold ):
+					SNVs_kept.append(SNV)
 					self.d[c_snvs] = SNV.alt_count
 					self.D[c_snvs] = SNV.alt_count + SNV.ref_count
 					self.M_snv[c_snvs] = segment.major_cn
@@ -122,6 +123,7 @@ class Model2(Model):
 						for j in range(1,len(subclonal_structure.index)):
 							self.q[c_snvs,j+1] = self.q[c_snvs,0] * self.fraction_tumor_cells_subclones[j]
 					c_snvs+=1
+				segment.SNVs = SNVs_kept
 		print("total snvs:", n_snvs,"snvs kept:",c_snvs)
 		#Only keep the first entries since some snv were discarded
 		self.M_snv = self.M_snv[:c_snvs,:]
@@ -132,9 +134,6 @@ class Model2(Model):
 		self.matrix_segment_to_snv = self.matrix_segment_to_snv[:c_snvs,:]
 		if subclonality_modelled:
 			self.fSNV_subclonal_matrix = self.fSNV_subclonal_matrix[:c_snvs,:]
-			if c_snvs >0:
-				print(self.fSNV[0],self.fSNV_subclonal_matrix[0,:])
-				print(self.q)
 		self.model_definition()
 
 	def model_definition(self):

@@ -2,6 +2,8 @@ from decorator_equality import class_equality_attributes
 from chromosome import Chromosome
 from position import Position
 from gene import Gene
+from snv import SNV
+import math
 
 @class_equality_attributes
 class Segment():
@@ -49,13 +51,14 @@ class Segment():
 		
 		self.SNVs = []
 		for snv in data.get('snvs',[]):
-			self.add_SNV(SNV(snv['chromosome'],
-				snv['pos'],
+			chromosome = Chromosome(snv['chromosome'])
+			position = Position(chromosome,snv['pos'],self.config)
+			self.add_SNV(SNV(chromosome,
+				position,
 				snv['ref_count'],
 				snv['alt_count'],
 				snv['ref_base'],
-				snv['alt_base'],
-				config))
+				snv['alt_base']))
 
 		self.genes = []
 		if 'genes' in data.keys():
