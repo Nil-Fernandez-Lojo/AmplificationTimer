@@ -1,3 +1,0 @@
-cluster	fraction_total_cells	fraction_cancer_cells	n_snvs	n_indels	n_svs
-1	0.783	1	1420.37193359085	145.454329954595	NA
-2	0.288	0.367816091954023	78.6280664091544	8.54567004540517	NA
