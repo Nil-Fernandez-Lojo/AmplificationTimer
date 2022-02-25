@@ -1,0 +1,16 @@
+t = {'a3914a6c-c622-11e3-bf01-24c6515278c0':{1:0.119,4:0.646},
+'7fba5aac-c622-11e3-bf01-24c6515278c0':{1:0.46,4:0.965}}
+
+mu = {'a3914a6c-c622-11e3-bf01-24c6515278c0':3.0927681529997898*(10**(-6)),
+'7fba5aac-c622-11e3-bf01-24c6515278c0':
+	
+
+for model_idx in [1,4]:
+	e_n_all = 0
+	e_n_1 = 0
+	for segment in a['segments']:
+		e_n_all += t*mu*segment.get_length()
+		e_n_1 += (1+(1-t)*segment.major_cn)+mu*segment.get_length()
+	pr
+
+
