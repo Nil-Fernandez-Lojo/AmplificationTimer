@@ -79,14 +79,14 @@ for samplename in list_samplenames:
 			start_pos = a.segments[0].start.position - margin
 			max_bases = a.segments[-1].end.position - a.segments[0].start.position + 2*margin
 
-			s.plot_CN_profile(add_snvs=add_snvs,
-				total_cn=total_cn,
-				chromosome=a.chromosome,
-				start_pos=start_pos,
-				max_bases = max_bases,
-				plot_threshold_amp = plot_threshold_amp,
-				title = samplename + ' chromosome '+str(a.chromosome.c)+' not filtered',
-				path_save = 'figures_CNP_LIRI_MYC_filtering/'+samplename + ' chromosome '+str(a.chromosome.c)+'_not_filtered.png')
+			s.plot_cn(add_snvs=add_snvs,
+                      total_cn=total_cn,
+                      chromosome=a.chromosome,
+                      start_pos=start_pos,
+                      max_bases = max_bases,
+                      plot_threshold_amp = plot_threshold_amp,
+                      title = samplename + ' chromosome '+str(a.chromosome.c)+' not filtered',
+                      path_save = 'figures_CNP_LIRI_MYC_filtering/'+samplename + ' chromosome '+str(a.chromosome.c)+'_not_filtered.png')
 			subclonality_modelled = True
 			model_index = 4
 			inference_t(s,i,model_index,subclonality_modelled,n_MCMC_iterations,folder_models,cores,filter_APOBEC = filter_APOBEC)
@@ -97,13 +97,13 @@ for samplename in list_samplenames:
 						segment.SNVs = segment_a.SNVs
 						break
 
-			s.plot_CN_profile(add_snvs=add_snvs,
-				total_cn=total_cn,
-				chromosome=a.chromosome,
-				start_pos=start_pos,
-				max_bases = max_bases,
-				plot_threshold_amp = plot_threshold_amp,
-				title = samplename + ' chromosome '+str(a.chromosome.c)+' filtered',
-				path_save = 'figures_CNP_LIRI_MYC_filtering/'+samplename + ' chromosome '+str(a.chromosome.c)+'_filtered.png')
+			s.plot_cn(add_snvs=add_snvs,
+                      total_cn=total_cn,
+                      chromosome=a.chromosome,
+                      start_pos=start_pos,
+                      max_bases = max_bases,
+                      plot_threshold_amp = plot_threshold_amp,
+                      title = samplename + ' chromosome '+str(a.chromosome.c)+' filtered',
+                      path_save = 'figures_CNP_LIRI_MYC_filtering/'+samplename + ' chromosome '+str(a.chromosome.c)+'_filtered.png')
 			break
 	 	

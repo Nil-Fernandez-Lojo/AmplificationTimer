@@ -18,7 +18,7 @@ suffix_snvs = ".consensus.20160830.somatic.snv_mnv.vcf"
 folder_snv_white = path_data/"final_consensus_snv_indel_passonly_icgc.public" / "snv_mnv"
 folder_snv_gray = path_data/"final_consensus_snv_indel_passonly_icgc.public" / "graylist" / "snv_mnv"
 path_summary_table = path_data / "summary_table_combined_annotations_v4.txt" 
-file_statistics_amp = 'statistics_amplifications.tsv'
+file_statistics_amp = 'deprecated/statistics_amplifications.tsv'
 
 def icgc(samplename):
 	file_white = folder_snv_white/(samplename+suffix_snvs)

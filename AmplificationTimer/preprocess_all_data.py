@@ -1,7 +1,6 @@
 from AmplificationTimerObjects import Sample
 from utility_functions import load_config
 import json
-# from inference import inference_t
 
 """
 This script preprocesses the data
@@ -15,8 +14,11 @@ amplifications = []
 N_samples = config['summary_table'].shape[0]
 
 for i in range(N_samples):
-	print(i, config['summary_table']['samplename'][i])
-	s = Sample(config,config['summary_table']['samplename'][i],save=True)
-	amplifications.extend(a.to_dict() for a in s.amplifications)
-	with open(config["path_amplifications_file"], 'w') as buff:
-		json.dump(amplifications, buff, indent=4)
+	samplename = config['summary_table']['samplename'][i]
+	print(i, samplename)
+	s = Sample(config,samplename,save=True)
+	for amplification in s.amplifications:
+		file_name = samplename + "_"+str(amplification.chromosome) + amplification.arm + ".json"
+		path_amplification = config["path_amplifications_folder"]/file_name
+		with open(path_amplification, 'w') as buff:
+			json.dump(amplification.to_dict(), buff, indent=4)

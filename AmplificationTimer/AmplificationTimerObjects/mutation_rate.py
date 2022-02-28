@@ -1,7 +1,7 @@
 from .decorator_equality import class_equality_attributes
 
 @class_equality_attributes
-class Mutation_rate():
+class Mutation_rate:
 	"""
 	class that represents the mutation rate
 
@@ -26,25 +26,40 @@ class Mutation_rate():
 	to_dict: returns a dictionary with the 4 attributes
 
 	"""
-	def __init__(self,n_1_0,l_1_0,n_1_1,l_1_1):
+	def __init__(self,n_1_0,l_1_0,n_1_1,l_1_1,n_1_0_ctpg,n_1_1_ctpg):
 		self.n_1_0 = n_1_0
+		self.n_1_0_ctpg = n_1_0_ctpg
 		self.l_1_0 = l_1_0
 		self.n_1_1 = n_1_1
+		self.n_1_1_ctpg = n_1_1_ctpg
 		self.l_1_1 = l_1_1
 		if (self.l_1_0 == 0) and (self.l_1_1 == 0):
 			print("Warning, no segments of with copy number 1+1 and 1+0")
 
-	def get_ML(self):
-		#default value if no segment of of copy number 1+1 and 1+0, is 10^-6 TODO: change this
+	def get_ML(self, only_clock_like):
+		#default value if no segment of of copy number 1+1 and 1+0, is 10^-6 TODO: change this, REALLY IMPORTANT otherwise do not trust it
+		if only_clock_like:
+			n_1_0 = self.n_1_0_ctpg
+			n_1_1 = self.n_1_1_ctpg
+		else:
+			n_1_0 = self.n_1_0
+			n_1_1 = self.n_1_1
+
 		if self.l_1_0+2*self.l_1_1 == 0:
 			return 10**(-6)
-		elif self.n_1_0+2*self.n_1_1 == 0:
+		elif n_1_0+2*n_1_1 == 0:
 			return 10**(-8)
 		else:
-			return (self.n_1_0+self.n_1_1)/(self.l_1_0+2*self.l_1_1)
+			return (n_1_0+n_1_1)/(self.l_1_0+2*self.l_1_1)
 	
-	def get_beta_posterior_parameters(self):
-		return (self.n_1_0+self.n_1_1+1,self.l_1_0+2*self.l_1_1+1)
+	def get_beta_posterior_parameters(self,only_clock_like=False):
+		if only_clock_like:
+			n_1_0 = self.n_1_0_ctpg
+			n_1_1 = self.n_1_1_ctpg
+		else:
+			n_1_0 = self.n_1_0
+			n_1_1 = self.n_1_1
+		return (n_1_0+n_1_1+1,self.l_1_0+2*self.l_1_1+1)
 
 	def to_dict(self):
 		dic = dict()
@@ -52,4 +67,6 @@ class Mutation_rate():
 		dic['l_1_0'] = self.l_1_0
 		dic['n_1_1'] = self.n_1_1
 		dic['l_1_1'] = self.l_1_1
+		dic['n_1_0_ctpg'] = self.n_1_0_ctpg
+		dic['n_1_1_ctpg'] = self.n_1_1_ctpg
 		return dic

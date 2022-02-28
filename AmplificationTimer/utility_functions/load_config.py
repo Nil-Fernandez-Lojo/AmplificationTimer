@@ -4,7 +4,26 @@ import numpy as np
 from pathlib import Path
 from pyensembl import EnsemblRelease
 
-def load_config(config_file_path):
+def load_genome(fasta_file):
+    with open(fasta_file, "r") as f:
+        fl = f.readlines()
+    genome = dict()
+    chr_number = 0
+    chr_name = None
+    chr_seq = ""
+    for line in fl:
+        if line[0] == ">":
+            if (chr_number!=0):
+                genome[chr_name] = chr_seq
+            chr_name = line[1:-1]
+            chr_seq = ''
+            chr_number+=1
+        else:
+            chr_seq+=line[:-1]
+    genome[chr_name] = chr_seq
+    return genome
+
+def load_config(config_file_path, load_genome_into_config=True):
     with open(config_file_path) as json_file:
         config = json.load(json_file)
     for key, value in config.items():
@@ -25,6 +44,7 @@ def load_config(config_file_path):
         config['cum_length_chr'][i] = cum_sum
         cum_sum += lengths.sum()
     config['cum_length_chr'][-1] = cum_sum
-
+    if load_genome_into_config:
+        config['genome'] = load_genome(config['path_fasta_genome'])
     return config
 
