@@ -15,7 +15,9 @@ def plot_cn(segments,
             threshold_amplification=None,
             title=None,
             path_save=None,
-            differentiate_snv_type=True):
+            show=True,
+            differentiate_snv_type=True,
+            link_segments=False):
     if chromosome is not None:
         if not isinstance(chromosome, Chromosome):
             chromosome = Chromosome(chromosome)
@@ -45,16 +47,25 @@ def plot_cn(segments,
         second_cn = major
         label_second_cn = "Major"
     fig, ax = plt.subplots()
-    for i in range(len(segments_to_plot)):
-        x_i = [x_start[i], x_end[i]]
-        if i == 0:
-            label_1 = "Minor"
-            label_2 = label_second_cn
-        else:
-            label_1 = None
-            label_2 = None
-        plt.plot(x_i, [minor[i]]*2, label=label_1,color = 'tab:orange')
-        plt.plot(x_i, [second_cn[i]]*2, label=label_2,color = 'tab:blue')
+    if link_segments:
+        minor_to_plot = [m for m in minor for _ in range(2)]
+        second_cn_to_plot = [M for M in second_cn for _ in range(2)]
+        x = []
+        for i in range(len(segments_to_plot)):
+            x.extend([x_start[i], x_end[i]])
+        plt.plot(x, minor_to_plot, label='Minor', color='tab:orange')
+        plt.plot(x, second_cn_to_plot, label=label_second_cn, color='tab:blue')
+    else:
+        for i in range(len(segments_to_plot)):
+            x_i = [x_start[i], x_end[i]]
+            if i == 0:
+                label_1 = "Minor"
+                label_2 = label_second_cn
+            else:
+                label_1 = None
+                label_2 = None
+            plt.plot(x_i, [minor[i]]*2, label=label_1,color = 'tab:orange')
+            plt.plot(x_i, [second_cn[i]]*2, label=label_2,color = 'tab:blue')
 
     if add_snvs:
         x_snvs = []
@@ -118,8 +129,8 @@ def plot_cn(segments,
     plt.legend()
     if title is not None:
         plt.title(title)
-    if path_save is None:
+    if show:
         plt.show()
-    else:
+    if path_save is not None:
         # TODO save file
         pass

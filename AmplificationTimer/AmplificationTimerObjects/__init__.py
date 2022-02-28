@@ -5,4 +5,5 @@ from .position import Position
 from .sample import Sample
 from .segment import Segment
 from .mutation_rate import Mutation_rate
+from .snv import SNV
 from .plot_cn import plot_cn

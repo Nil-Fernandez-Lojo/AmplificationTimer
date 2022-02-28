@@ -1,1 +1,2 @@
 from .inference import inference_t
+from .generate_simulated_data import generate_simulated_data_under_prior

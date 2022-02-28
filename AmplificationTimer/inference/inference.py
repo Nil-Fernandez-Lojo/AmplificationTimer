@@ -12,7 +12,7 @@ def inference_t(amplification,
 				only_clock_like_SNVs = False,
 				true_t = None,
 				true_u = None,
-				save = True):
+				save = False):
 
 	if subclonality_modelled:
 		path_subclonality_modelled = "subclonality_modelled"
@@ -107,4 +107,4 @@ def inference_t(amplification,
 			pickle.dump(summary, buff)
 		figure_path = figure_path / (save_file_prefix+"_plot_posterior.png")
 		plt.savefig(figure_path, bbox_inches='tight')
-	return summary
+	return trace

@@ -180,7 +180,8 @@ class Sample():
                         plot_threshold_amp=True,
                         title=None,
                         path_save=None,
-                        differentiate_snv_type=True):
+                        differentiate_snv_type=True,
+                        show=True):
         if plot_threshold_amp:
             threshold_amplification = self.threshold_amplification
         else:
@@ -196,7 +197,9 @@ class Sample():
                 threshold_amplification=threshold_amplification,
                 title=title,
                 path_save=path_save,
-                differentiate_snv_type=differentiate_snv_type)
+                differentiate_snv_type=differentiate_snv_type,
+                show=show,
+                link_segments=True)
 
     def load_preprocessed_data(self, path_preprocessed_data):
         with open(self.config['path_preprocessed_samples'] / (self.name + '.json'), 'r') as fp:

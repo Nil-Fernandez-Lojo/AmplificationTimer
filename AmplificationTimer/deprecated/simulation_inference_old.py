@@ -35,7 +35,7 @@ def simulation_inference_using_prior(sample_,
 	t = None,
 	mu = None,
 	min_reads_detect_SNV = 0,
-	subclonality_modelled_simulation=True, 
+	subclonality_modelled_simulation=True,
 	subclonality_modelled_inference=True,
 	nrpcc = 'same',
 	n_MCMC_iterations = 20000,
@@ -46,7 +46,7 @@ def simulation_inference_using_prior(sample_,
 	# TODO: usage of constant nrpcc while actually should sample from distribution with that mean
 	# TODO: put rest of attributes SNV
 	# TODO: keep APOBEC like mutations?
-	#actually use another prior for mutation rate
+	# TODO: actually use another prior for mutation rate
 
 	#Some preprocessing
 	sample = copy.deepcopy(sample_)
@@ -63,7 +63,7 @@ def simulation_inference_using_prior(sample_,
 
 	fSNV = sample.subclonal_structure["n_snvs"].values/sample.subclonal_structure["n_snvs"].sum()
 	print("fSNV", fSNV)
-	subclone_ccf = sample.subclonal_structure["fraction_cancer_cells"].values	
+	subclone_ccf = sample.subclonal_structure["fraction_cancer_cells"].values
 	print("subclone_ccf",subclone_ccf)
 
 	#Sample latent variables
@@ -73,7 +73,7 @@ def simulation_inference_using_prior(sample_,
 		t = np.random.uniform()
 	print("mu",mu)
 	print("t",t)
-	
+
 	if model_idx ==3:
 		u = np.random.uniform()
 	elif model_idx ==4:
@@ -92,7 +92,7 @@ def simulation_inference_using_prior(sample_,
 				q = rho/(2*rho + segment.get_ploidy_healthy()*(1-rho))
 			D = coverage(segment,rho,nrpcc)
 			n_SNVs = np.random.binomial(n=segment.get_length(), p = p)
-			
+
 			for i in range(n_SNVs):
 				d = np.random.binomial(n=D, p = q)
 				#SNV detected

@@ -5,7 +5,7 @@ from inference import inference_t
 
 path_config = "../config.json"
 
-config = load_config(path_config)
+config = load_config(path_config, load_genome_into_config=False)
 
 amplifications_dict = []
 for file in config['path_amplifications_folder'].glob('*.json'):
@@ -23,4 +23,5 @@ for amp_dict in amplifications_dict:
 									model_index,
 									subclonality_modelled,
 									filter_APOBEC,
-									only_clock_like_SNVs)
+									only_clock_like_SNVs,
+									save=True)

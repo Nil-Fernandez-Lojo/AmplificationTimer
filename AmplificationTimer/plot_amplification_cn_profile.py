@@ -3,14 +3,13 @@ import json
 from AmplificationTimerObjects import Amplification,Sample
 from utility_functions import load_config
 
-
 """ the amplification must have been preprocessed"""
 
 path_config = "../config.json"
 
 samplename = '00c27940-c623-11e3-bf01-24c6515278c0'
 amplification_arm = '9p'
-add_context = True
+add_context = False
 add_snvs = True
 total_cn = False
 plot_threshold_amp = True
