@@ -9,6 +9,7 @@ from pyensembl import EnsemblRelease
 import numpy as np 
 import json
 
+# TODO: refactor
 add_snvs = True
 plot_threshold_amp = False
 total_cn = False

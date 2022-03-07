@@ -3,6 +3,7 @@ import pymc3 as pm
 from pathlib import Path
 import matplotlib.pyplot as plt
 
+# TODO refactor
 path_folder = Path("inferred_times")
 sample_name = "02e5c36f-5bec-45e2-a048-875653b85ca1"
 amplification_index = 0

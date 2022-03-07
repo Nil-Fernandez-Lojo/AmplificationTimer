@@ -15,7 +15,6 @@ def plot_cn(segments,
             threshold_amplification=None,
             title=None,
             path_save=None,
-            show=True,
             differentiate_snv_type=True,
             link_segments=False):
     if chromosome is not None:
@@ -129,8 +128,7 @@ def plot_cn(segments,
     plt.legend()
     if title is not None:
         plt.title(title)
-    if show:
-        plt.show()
     if path_save is not None:
-        # TODO save file
-        pass
+        plt.savefig(path_save,bbox_inches='tight',dpi=300)
+    else:
+        plt.show()

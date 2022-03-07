@@ -1,7 +1,7 @@
 import numpy as np
 import copy
 
-from AmplificationTimer.AmplificationTimerObjects import SNV, Position
+from AmplificationTimerObjects import SNV, Position
 
 def coverage(segment, rho, nrpcc):
     cn = segment.major_cn + segment.minor_cn
@@ -73,7 +73,10 @@ def generate_simulated_data_under_prior(sample_,
                                         D,
                                         D - d,
                                         "N",
-                                        "N"))
+                                        "N",
+                                        sample.config,
+                                        previous_ref_base='N',
+                                        next_ref_base='N'))
 
     # generate SNVs on Amplified segments with NRPCC
     for i, segment in enumerate(amplification.segments):
@@ -117,7 +120,10 @@ def generate_simulated_data_under_prior(sample_,
                                         D - d,
                                         d,
                                         "N",
-                                        "N"))
+                                        "N",
+                                        sample.config,
+                                        previous_ref_base='N',
+                                        next_ref_base='N'))
 
     amplification.mutation_rate = sample.get_mutation_rate(sample.segments)
 

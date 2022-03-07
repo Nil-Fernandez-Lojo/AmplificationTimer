@@ -104,6 +104,12 @@ class Amplification():
             tot_len += len_segment
         return number_bases / tot_len
 
+    def get_length(self):
+        length_amplification = 0
+        for segment in self.segments:
+            length_amplification += segment.get_length()
+        return length_amplification
+
     def plot(self,
              add_snvs=True,
              rel_margin=0.1,
@@ -135,16 +141,16 @@ class Amplification():
                 path_save=path_save,
                 differentiate_snv_type=differentiate_snv_type)
 
-def to_dict(self):
-    dic = dict()
-    dic['chromosome'] = str(self.chromosome)
-    dic['arm'] = self.arm
-    dic['segments'] = [segment.to_dict() for segment in self.segments]
-    dic['oncogenes'] = [gene.to_dict() for gene in self.oncogenes]
-    dic['threshold_amplification'] = self.threshold_amplification
-    dic['clinical_data'] = self.clinical_data
-    dic['mutation_rate'] = self.mutation_rate.to_dict()
-    dic['subclonal_structure'] = self.subclonal_structure.to_dict('records')
-    # TODO: not good practice, should change this:
-    # self.config is not added since it is loaded with load_config
-    return dic
+    def to_dict(self):
+        dic = dict()
+        dic['chromosome'] = str(self.chromosome)
+        dic['arm'] = self.arm
+        dic['segments'] = [segment.to_dict() for segment in self.segments]
+        dic['oncogenes'] = [gene.to_dict() for gene in self.oncogenes]
+        dic['threshold_amplification'] = self.threshold_amplification
+        dic['clinical_data'] = self.clinical_data
+        dic['mutation_rate'] = self.mutation_rate.to_dict()
+        dic['subclonal_structure'] = self.subclonal_structure.to_dict('records')
+        # TODO: not good practice, should change this:
+        # self.config is not added since it is loaded with load_config
+        return dic

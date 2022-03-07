@@ -40,7 +40,9 @@ class SNV:
         return dic
 
     def clock_like(self):
-        return (self.ref_base == 'C') and (self.alt_base == 'T') and (self.next_ref_base == 'G')
+        forward_strand_clock = (self.ref_base == 'C') and (self.alt_base == 'T') and (self.next_ref_base == 'G')
+        backward_strand_clock = (self.ref_base == 'G') and (self.alt_base == 'A') and (self.previous_ref_base == 'C')
+        return forward_strand_clock or backward_strand_clock
 
     def __str__(self):
         return str(self.pos) + " alt counts: " + str(self.alt_count) + " ref counts: " + str(

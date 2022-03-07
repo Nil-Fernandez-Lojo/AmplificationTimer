@@ -6,6 +6,8 @@ import arviz as avz
 import matplotlib.pyplot as plt
 import numpy as np
 
+# TODO refactor
+
 path_amplifications_all = "preprocessed_data/amplifications_all.json"
 
 model_idx = 1

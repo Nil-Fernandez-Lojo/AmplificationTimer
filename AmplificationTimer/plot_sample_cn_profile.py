@@ -2,26 +2,21 @@
 
 from AmplificationTimerObjects import Sample
 from utility_functions import load_config
-from utility_functions import parse_arguments
+from utility_functions import parse_arguments_plot
+from pathlib import Path
 
-""" If sample has not been preprocessed, load_genome_into_config should be set to true when loading file"""
-
-args = parse_arguments()
-if args.title == 'default':
-    title = args.samplename
-    if args.chromosome is not None:
-        title += ' chromosome ' + args.chromosome
-else:
-    title = args.title
-
+args = parse_arguments_plot('sample')
 path_config = "../config.json"
 
 # TODO add oncogenes
 #oncogene = [(69201952, 69244466, 'MDM2')]  # position in the chr and name
 
-config = load_config(path_config,load_genome_into_config=False)
+# TODO not clean
+path_preprocessed_data = Path("../preprocessed_data/samples") / (args.samplename + '.json')
+load_genome_into_config = not path_preprocessed_data.exists()
+config = load_config(path_config,load_genome_into_config=load_genome_into_config)
 
-s = Sample(config, args.samplename)
+s = Sample(config, args.samplename, save=False)
 s.plot_CN_profile(add_snvs=args.add_snvs,
                   total_cn=args.total_cn,
                   chromosome=args.chromosome,
@@ -30,5 +25,4 @@ s.plot_CN_profile(add_snvs=args.add_snvs,
                   plot_threshold_amp=args.plot_threshold_amp,
                   title=title,
                   path_save=args.path_save,
-                  show=args.show,
                   differentiate_snv_type= args.mark_clock_like_snvs)

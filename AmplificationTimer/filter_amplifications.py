@@ -1,20 +1,24 @@
 import json
 from pathlib import Path
-import pandas as pd
-import numpy as np
-from AmplificationTimerObjects import Sample
+
+from AmplificationTimerObjects import Sample,Amplification
 from scipy.stats import binomtest
 from utility_functions import load_config, icgc
 
+# TODO: refactor
+# Filtering parameters
 p_value_threshold = 0.05
 min_num_snvs_valid = 5
 min_fraction_snvs_valid = 0.5
 diff_cn_filter = 2
 fraction_snvs_valid = 0.8
 
+# plot parameters
+folder_plot_filtered_amps = Path("../figures/CNP_filtered_amps")
 plot_threshold_amp = True
 add_snvs= True
 total_cn = False
+rel_margin = 0.1
 
 path_config = "../config.json"
 config = load_config(path_config)
@@ -23,7 +27,7 @@ def filter_icgc_preferred(amplifications):
     amplifications_icgc_preferred = []
     for a in amplifications:
         samplename = a['clinical_data']['samplename']
-        if a['clinical_data']['is_preferred'] and icgc(samplename):
+        if a['clinical_data']['is_preferred'] and icgc(samplename,config):
             amplifications_icgc_preferred.append(a)
     return amplifications_icgc_preferred
 
@@ -98,23 +102,6 @@ def filter_problematic_major(amplifications,diff_cn,fraction_snvs_valid,p_value_
             filtered_amplifications.append(amp)
     return filtered_amplifications
 
-def plot_amplification(a):
-    name = a['clinical_data']['samplename']
-    s = Sample(config,name)
-    chromosome = a['segments'][0]['chromosome']
-    margin = 0.1 * (a['segments'][-1]['end'] - a['segments'][0]['start'])
-    start_pos = a['segments'][0]['start'] - margin
-    max_bases = (a['segments'][-1]['end'] - a['segments'][0]['start']) + 2*margin
-    s.plot_CN_profile(add_snvs=add_snvs,
-        total_cn=total_cn,
-        chromosome=chromosome,
-        start_pos=start_pos,
-        max_bases = max_bases,
-        plot_threshold_amp = plot_threshold_amp,
-        title = name + ' chromosome '+chromosome)
-    #path_save = 'figures/plots_CNP_amps/'+name+'_chr_'+chromosome+'.png')
-
-
 amplifications_dict = []
 for file in config['path_amplifications_folder'].glob('*.json'):
     with open(file) as json_file:
@@ -124,15 +111,34 @@ amplifications_icgc_preferred = filter_icgc_preferred(amplifications_dict)
 amplifications_5_snvs_or_more = filter_number_SNVs(amplifications_icgc_preferred,min_num_snvs_valid,
                                                    min_fraction_snvs_valid,
                                                    p_value_threshold)
+
 filtered_amplifications = filter_problematic_major(amplifications_5_snvs_or_more,
                                                    diff_cn_filter,
                                                    fraction_snvs_valid,
                                                    p_value_threshold)
+
+print('Number amplifications_icgc_preferred:',len(amplifications_icgc_preferred))
 print('Number amps 5 or more valid snvs:',len(amplifications_5_snvs_or_more))
 print('Number amps pass binomial test',len(filtered_amplifications))
 
-for i in range(20):
-    plot_amplification(filtered_amplifications[i])
+for amp_dict in filtered_amplifications:
+    amplification = Amplification(amplification_dict=amp_dict, config=config)
+    samplename = amp_dict['clinical_data']['samplename']
+    s = Sample(config, samplename,save=False)
+    margin = rel_margin * (amplification.segments[-1].end.position - amplification.segments[0].start.position)
+    start_pos = amplification.segments[0].start.position - margin
+    max_bases = (amplification.segments[-1].end.position - amplification.segments[0].start.position) + 2 * margin
+
+    path_save = folder_plot_filtered_amps/(samplename+ ' '+amplification.chromosome.chromosome+amplification.arm+'.png')
+    s.plot_CN_profile(add_snvs=add_snvs,
+                      total_cn=total_cn,
+                      chromosome=amplification.chromosome,
+                      start_pos=start_pos,
+                      max_bases=max_bases,
+                      plot_threshold_amp=True,
+                      differentiate_snv_type=True,
+                      title=(samplename+ ' '+amplification.chromosome.chromosome+amplification.arm),
+                      path_save = path_save)
 
 
 # print(len(amplifications))

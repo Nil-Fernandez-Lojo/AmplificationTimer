@@ -1,65 +1,71 @@
-import sys
 import numpy as np
 import pandas as pd
 import arviz as avz
+from pathlib import Path
 
 from inference import inference_t, generate_simulated_data_under_prior
+from utility_functions import parse_arguments_simulation, load_config
+from AmplificationTimerObjects import Sample
 
-sample_idx = int(sys.argv[1])
-model_idx = int(sys.argv[2])
-folder_to_save =
-file_out = "fig_2_data/sample_idx_"+str(sample_idx)+"_model_"+str(model_idx)+".tsv"
-expected_mut_list = [10,100,1000,10000]
-amplification_idx = 0
-list_t = np.linspace(0.0, 1.0, num=21)
-subclonality_modelled = True
-filter_APOBEC = True
-save = False
+path_config = "../config.json"
 
-sample =
-amplification =
-length_amplification = 0
-for segment in amplification.segments:
-	length_amplification += segment.get_length()
+# TODO check that it works
+
+args = parse_arguments_simulation()
+# TODO: should write additional file with settings used
+if not args.folder_out.exists():
+    args.folder_out.mkdir(parents=True, exist_ok=True)
+
+file_out = args.folder_out / (args.samplename + '_'+args.chromosome + args.arm+'.tsv')
+
+# TODO not clean
+path_preprocessed_data = Path("../preprocessed_data/samples") / (args.samplename + '.json')
+load_genome_into_config = not path_preprocessed_data.exists()
+config = load_config(path_config, load_genome_into_config=load_genome_into_config)
+
+sample = Sample(config, args.samplename, save=False)
+for a in sample.amplifications:
+    if (a.chromosome.chromosome == args.chromosome) and (a.arm == args.arm):
+        amplification = a
+
 ploidy_amp = amplification.get_mean_ploidy()
 
-results = pd.DataFrame(np.zeros((len(expected_mut_list)*len(list_t), 6)),
-	columns = ['sample_idx',
-	'amplification_idx',
-	'model_idx',
-	'expected_mutations',
-	't',
-	'inferred_t'])
-results['sample_idx'] = sample_idx
-results['amplification_idx'] = amplification_idx
-results['model_idx'] = model_idx
+results = pd.DataFrame(np.zeros((len(args.expected_mut_list) * len(args.list_t), 6)),
+                       columns=['samplename',
+                                'chr_arm',
+                                'model_idx',
+                                'expected_mutations',
+                                't',
+                                'inferred_t'])
+results.loc['samplename'] = args.samplename
+results.loc['chr_arm'] = args.chromosome + args.arm
+results.loc['model_idx'] = args.model_idx
 
 i = 0
-for expected_mut in expected_mut_list:
-	for t in list_t:
-		mu = expected_mut/(length_amplification*ploidy_amp)
-		t,u,amplification = generate_simulated_data_under_prior(sample,
-                                     amplification,
-                                     model_idx,
-                                     t=t,
-                                     mu=mu,
-                                     min_reads_detect_SNV=0,
-                                     subclonality_modelled_simulation=True,
-                                     nrpcc='same')
-		trace = inference_t(amplification,
-					model_idx,
-					subclonality_modelled,
-					filter_APOBEC,
-					only_clock_like_SNVs=False,
-					true_t=t,
-					true_u=u,
-					save=False)
+for expected_mut in args.expected_mut_list:
+    for t in args.list_t:
+        mu = expected_mut / (amplification.get_length() * ploidy_amp)
+        t, u, amplification = generate_simulated_data_under_prior(sample,
+                                                                  amplification,
+                                                                  args.model_idx,
+                                                                  t=t,
+                                                                  mu=mu,
+                                                                  min_reads_detect_SNV=0,
+                                                                  subclonality_modelled_simulation=True,
+                                                                  nrpcc='same')
+        trace = inference_t(amplification,
+                            args.model_idx,
+                            args.subclonality_modelled,
+                            args.filter_APOBEC,
+                            only_clock_like_SNVs=False,
+                            true_t=t,
+                            true_u=u,
+                            save=False)
 
-		summary = avz.summary(trace)
-		inferred_t = summary[['mean']].T.reset_index(drop=True)['t'].loc[0]
-		results['expected_mutations'].loc[i] = expected_mut
-		results['t'].loc[i] = t
-		results['inferred_t'].loc[i] = inferred_t
-		results.to_csv(file_out,index=False,sep='\t')
-		i+=1
-
+        summary = avz.summary(trace)
+        inferred_t = summary[['mean']].T.reset_index(drop=True)['t'].loc[0]
+        results.at[i,'expected_mutations'] = expected_mut
+        results.at[i,'t'] = t
+        results.at[i,'inferred_t'] = inferred_t
+        results.to_csv(file_out, index=False, sep='\t')
+        i += 1
