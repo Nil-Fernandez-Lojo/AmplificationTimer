@@ -68,7 +68,7 @@ def generate_simulated_data_under_prior(sample_,
                 # SNV detected
                 if d >= min_reads_detect_SNV:
                     # TODO: sample position at random in amplified segments
-                    segment.add_SNV(SNV(segment.chromosome,
+                    segment.add_snv(SNV(segment.chromosome,
                                         Position(segment.chromosome, segment.start.position + 1, sample.config),
                                         D,
                                         D - d,
@@ -115,7 +115,7 @@ def generate_simulated_data_under_prior(sample_,
             for snv_idx in range(n[snv_type_idx]):
                 d = np.random.binomial(n=D, p=q[snv_type_idx])
                 if d >= min_reads_detect_SNV:
-                    segment.add_SNV(SNV(segment.chromosome,
+                    segment.add_snv(SNV(segment.chromosome,
                                         Position(segment.chromosome, segment.start.position + 1, sample.config),
                                         D - d,
                                         d,

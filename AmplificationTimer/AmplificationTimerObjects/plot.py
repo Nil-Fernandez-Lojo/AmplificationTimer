@@ -16,7 +16,11 @@ def plot_cn(segments,
             title=None,
             path_save=None,
             differentiate_snv_type=True,
-            link_segments=False):
+            link_segments=False,
+            ax = None):
+    if ax is None:
+        ax = plt.gca()
+
     if chromosome is not None:
         if not isinstance(chromosome, Chromosome):
             chromosome = Chromosome(chromosome)
@@ -35,7 +39,7 @@ def plot_cn(segments,
             x_start[i] = segment.start.absolute_position
             x_end[i] = segment.end.absolute_position
         else:
-            x_start[i]  = segment.start.position
+            x_start[i] = segment.start.position
             x_end[i] = segment.end.position
         major[i] = segment.major_cn
         minor[i] = segment.minor_cn
@@ -45,7 +49,6 @@ def plot_cn(segments,
     else:
         second_cn = major
         label_second_cn = "Major"
-    fig, ax = plt.subplots()
     if link_segments:
         minor_to_plot = [m for m in minor for _ in range(2)]
         second_cn_to_plot = [M for M in second_cn for _ in range(2)]
@@ -63,8 +66,8 @@ def plot_cn(segments,
             else:
                 label_1 = None
                 label_2 = None
-            plt.plot(x_i, [minor[i]]*2, label=label_1,color = 'tab:orange')
-            plt.plot(x_i, [second_cn[i]]*2, label=label_2,color = 'tab:blue')
+            plt.plot(x_i, [minor[i]] * 2, label=label_1, color='tab:orange')
+            plt.plot(x_i, [second_cn[i]] * 2, label=label_2, color='tab:blue')
 
     if add_snvs:
         x_snvs = []
@@ -120,7 +123,7 @@ def plot_cn(segments,
     else:
         if start_pos != 0 or max_bases is not None:
             if max_bases is None:
-                ax.set_xlim(start_pos, 1.1 * x[-1])
+                ax.set_xlim(start_pos, 1.1 * segments_to_plot[-1].position.position)
             else:
                 ax.set_xlim(start_pos, start_pos + max_bases)
         ax.set_xlabel('Position')
@@ -129,6 +132,27 @@ def plot_cn(segments,
     if title is not None:
         plt.title(title)
     if path_save is not None:
-        plt.savefig(path_save,bbox_inches='tight',dpi=300)
-    else:
-        plt.show()
+        plt.savefig(path_save, bbox_inches='tight', dpi=300)
+
+
+def plot_normalised_mu(pos,normalised_mu,mu_hat,config,chromosome=None,ax= None):
+    if ax is None:
+        ax = plt.gca()
+    x = [p.absolute_position for p in pos]
+    ax.plot(x, normalised_mu, label='normalised mu')
+    if chromosome is None:
+        for i in range(len(config["cum_length_chr"])):
+            ax.axvline(x=config["cum_length_chr"][i], color='k', linestyle='--', linewidth=0.4)
+        ax.set_xticks(config["cum_length_chr"])
+        ax.set_xticklabels('')
+        ax.set_xticks([(config["cum_length_chr"][i] + config["cum_length_chr"][i + 1]) / 2 for i in
+                       range(len(config["cum_length_chr"]) - 1)], minor=True)
+        ax.set_xticklabels(list(range(1, 23)) + ['X', 'Y'], minor=True)
+        for tick in ax.xaxis.get_minor_ticks():
+            tick.tick1line.set_markersize(0)
+            tick.tick2line.set_markersize(0)
+            tick.label1.set_horizontalalignment('center')
+        ax.set_xlabel('Chromosome')
+    ax.axhline(y=mu_hat, color='k', label='estimated mu from 1+1 and 1+0')
+    ax.set_ylabel('Nomalised mu')
+    ax.legend()

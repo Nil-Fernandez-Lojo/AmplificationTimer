@@ -1,34 +1,16 @@
-import copy
 import pandas as pd
 from .decorator_equality import class_equality_attributes
 from .chromosome import Chromosome
-from .mutation_rate import Mutation_rate
+from .mutation_rate import MutationRate
 from .segment import Segment
-from .plot_cn import plot_cn
+from .plot import plot_cn
+
 
 @class_equality_attributes
-class Amplification():
+class Amplification:
     """
     Class that encodes an amplification
 
-    ...
-
-    Attributes
-    ----------
-    chromosome: Chromosome
-        Chromosome in which the amplification took place
-    arm: str
-        chromosome arm ('p' or 'q')
-    segments: list of Segments
-        list of the segments amplified
-    infered_time:
-
-
-    Methods:
-    init: takes as input chromosome, arm, segments
-    add_segment: adds a segment to self.segments
-    get_genes: returns the genes that are encoded in teh segments
-    to_dict: returns a dictionary encoding the amplification
     """
 
     def __init__(self,
@@ -49,15 +31,13 @@ class Amplification():
             self.segments = [Segment(segment, self.config, self.clinical_data) for segment in
                              amplification_dict['segments']]
             self.threshold_amplification = amplification_dict['threshold_amplification']
-            self.mutation_rate = Mutation_rate(amplification_dict['mutation_rate']['n_1_0'],
-                                               amplification_dict['mutation_rate']['l_1_0'],
-                                               amplification_dict['mutation_rate']['n_1_1'],
-                                               amplification_dict['mutation_rate']['l_1_1'],
-                                               amplification_dict['mutation_rate']['n_1_0_ctpg'],
-                                               amplification_dict['mutation_rate']['n_1_1_ctpg'])
+            self.mutation_rate = MutationRate(amplification_dict['mutation_rate']['n_1_0'],
+                                              amplification_dict['mutation_rate']['l_1_0'],
+                                              amplification_dict['mutation_rate']['n_1_1'],
+                                              amplification_dict['mutation_rate']['l_1_1'],
+                                              amplification_dict['mutation_rate']['n_1_0_ctpg'],
+                                              amplification_dict['mutation_rate']['n_1_1_ctpg'])
             self.subclonal_structure = pd.DataFrame.from_dict(amplification_dict['subclonal_structure'])
-            self.oncogenes = []
-            self.set_oncogenes()
         else:
             self.chromosome = chromosome
             self.arm = arm
@@ -65,9 +45,12 @@ class Amplification():
             self.config = config
             self.threshold_amplification = threshold_amplification
             self.clinical_data = clinical_data
-            self.oncogenes = []
             self.mutation_rate = mutation_rate
             self.subclonal_structure = subclonal_structure
+        # TODO should not be recomputed each time
+        self.oncogenes = []
+        self.potential_driver_oncogenes = []
+        self.set_oncogenes()
 
     def add_segment(self, segment):
         self.segments.append(segment)
@@ -83,7 +66,10 @@ class Amplification():
 
     def set_oncogenes(self):
         self.oncogenes = []
+        self.potential_driver_oncogenes = []
         genes = self.get_genes()
+        cancer_type = self.config['map_cancer_type_summary_to_driver_table'].get(self.clinical_data['histology_pcawg'],
+                                                                                 self.clinical_data['histology_pcawg'])
         for gene in genes:
             if isinstance(gene.entrez_id, list):
                 list_entrez_id = gene.entrez_id
@@ -92,7 +78,9 @@ class Amplification():
             for entrez_id in list_entrez_id:
                 if entrez_id in self.config['oncogenes']["Entrez GeneId"].values and (gene not in self.oncogenes):
                     self.oncogenes.append(gene)
-        return copy.deepcopy(self.oncogenes)
+            if ((gene.name in self.config['drivers'][cancer_type]['gain'])
+                    and (gene not in self.potential_driver_oncogenes)):
+                self.potential_driver_oncogenes.append(gene)
 
     def get_mean_ploidy(self):
         tot_len = 0
@@ -117,7 +105,8 @@ class Amplification():
              plot_threshold_amp=True,
              title=None,
              path_save=None,
-             differentiate_snv_type=True):
+             differentiate_snv_type=True,
+             ax=None):
 
         if plot_threshold_amp:
             threshold_amplification = self.threshold_amplification
@@ -125,8 +114,8 @@ class Amplification():
             threshold_amplification = None
 
         margin = rel_margin * (self.segments[-1].end.position - self.segments[0].start.position)
-        start_pos = self.segments[0].start.position- margin
-        max_bases = (self.segments[-1].end.position - self.segments[0].start.position) + 2*margin
+        start_pos = self.segments[0].start.position - margin
+        max_bases = (self.segments[-1].end.position - self.segments[0].start.position) + 2 * margin
 
         plot_cn(self.segments,
                 self.config,
@@ -139,7 +128,11 @@ class Amplification():
                 threshold_amplification=threshold_amplification,
                 title=title,
                 path_save=path_save,
-                differentiate_snv_type=differentiate_snv_type)
+                differentiate_snv_type=differentiate_snv_type,
+                ax=ax)
+
+    def get_name(self):
+        return self.clinical_data['samplename']+str(self.chromosome)+self.arm
 
     def to_dict(self):
         dic = dict()
@@ -147,6 +140,7 @@ class Amplification():
         dic['arm'] = self.arm
         dic['segments'] = [segment.to_dict() for segment in self.segments]
         dic['oncogenes'] = [gene.to_dict() for gene in self.oncogenes]
+        dic['potential_driver_oncogenes'] = [gene.to_dict() for gene in self.potential_driver_oncogenes]
         dic['threshold_amplification'] = self.threshold_amplification
         dic['clinical_data'] = self.clinical_data
         dic['mutation_rate'] = self.mutation_rate.to_dict()
@@ -154,3 +148,4 @@ class Amplification():
         # TODO: not good practice, should change this:
         # self.config is not added since it is loaded with load_config
         return dic
+

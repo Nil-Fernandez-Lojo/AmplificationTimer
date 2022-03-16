@@ -20,9 +20,9 @@ class Model():
 		if subclonality_modelled:
 			self.fSNV = subclonal_structure["n_snvs"]/subclonal_structure["n_snvs"].sum()
 			self.fraction_tumor_cells_subclones = subclonal_structure["fraction_cancer_cells"]
-			self.mu_clonal_ML = mu.get_ML()*self.fSNV[0]
+			self.mu_clonal_ML = mu.get_ml() * self.fSNV[0]
 		else:
-			self.mu_clonal_ML = mu.get_ML()
+			self.mu_clonal_ML = mu.get_ml()
 		self.model = pm.Model()
 
 	def get_MCMC_samples_posterior(self,n_samples):

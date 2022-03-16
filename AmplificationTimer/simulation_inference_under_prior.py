@@ -53,6 +53,11 @@ for expected_mut in args.expected_mut_list:
                                                                   min_reads_detect_SNV=0,
                                                                   subclonality_modelled_simulation=True,
                                                                   nrpcc='same')
+        n_snv = 0
+        for s in amplification.segments:
+            n_snv += len(s.SNVs)
+        print(expected_mut, n_snv)
+        continue
         trace = inference_t(amplification,
                             args.model_idx,
                             args.subclonality_modelled,

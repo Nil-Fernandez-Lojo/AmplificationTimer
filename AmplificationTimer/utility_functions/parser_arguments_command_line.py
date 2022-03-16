@@ -42,7 +42,7 @@ def parse_arguments_plot(plot_type):
         args.title = args.samplename
         if args.chromosome is not None:
             args.title += ' ' + args.chromosome
-        if args.arm is not None:
+        if (plot_type == 'amplification') and (args.arm is not None):
             args.title += args.arm
     return args
 
@@ -70,4 +70,20 @@ def parse_arguments_simulation():
                         help='folder to save simulation results, default: inference_results/simulation')
     args = parser.parse_args()
     args.folder_out = Path(args.folder_out)
+    return args
+
+def parse_arguments_inference():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--no_modelling_subclonality', dest='subclonality_modelled', action='store_const',
+                        const=False, default=True,
+                        help='with this flag, no modelling of subclones')
+    parser.add_argument('--no_filter_APOBEC', dest='filter_APOBEC', action='store_const',
+                        const=False, default=True,
+                        help='with this flag, no filter APOBEC SNVs')
+    parser.add_argument('--only_clock_like_SNVs', dest='only_clock_like_SNVs', action='store_const',
+                        const=True, default=False,
+                        help='with this flag, only (C->T)pG snvs are used')
+    parser.add_argument('model_index', type=int,
+                        help='model used for the inference')
+    args = parser.parse_args()
     return args

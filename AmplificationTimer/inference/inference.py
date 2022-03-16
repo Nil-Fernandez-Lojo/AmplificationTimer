@@ -50,7 +50,7 @@ def inference_t(amplification,
 		if save:
 			t = np.linspace(0,1,100)
 			analytical_posterior = model.get_analytical_posterior(t)
-			analytical_posterior_path = trace_path / (samplename+'_amp_'+str(amplification.chromosome)+amplification.arm+'_analytical_posterior.pkl')
+			analytical_posterior_path = trace_path / (samplename+'_'+str(amplification.chromosome)+amplification.arm+'_analytical_posterior.pkl')
 			with open(analytical_posterior_path, 'wb') as buff:
 				pickle.dump(analytical_posterior, buff)
 	elif model_idx == 2:
@@ -98,7 +98,7 @@ def inference_t(amplification,
 				print(i,u)
 				print(ax.flatten()[1+i])
 				ax.flatten()[1+i].axvline(x=u)
-		save_file_prefix = samplename+str(amplification.chromosome)+amplification.arm
+		save_file_prefix = samplename+'_'+str(amplification.chromosome)+amplification.arm
 		summary_path = trace_path / (save_file_prefix+'_trace_summary.pkl')
 		trace_path = trace_path / (save_file_prefix+'_trace.pkl')
 		with open(trace_path, 'wb') as buff:

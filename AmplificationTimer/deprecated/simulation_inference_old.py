@@ -97,11 +97,11 @@ def simulation_inference_using_prior(sample_,
 				d = np.random.binomial(n=D, p = q)
 				#SNV detected
 				if d>=min_reads_detect_SNV:
-					segment.add_SNV(SNV(segment.chromosome,
-						Position(segment.chromosome,segment.start.position+1,sample.config), #TODO
-						D,
-						D-d,
-						"", #TODO
+					segment.add_snv(SNV(segment.chromosome,
+                                        Position(segment.chromosome,segment.start.position+1,sample.config),  #TODO
+                                        D,
+                                        D - d,
+						"",  #TODO
 						"")) #TODO
 
 
@@ -145,11 +145,11 @@ def simulation_inference_using_prior(sample_,
 			for snv_idx in range(n[snv_type_idx]):
 				d = np.random.binomial(n=D, p = q[snv_type_idx])
 				if d>=min_reads_detect_SNV:
-					segment.add_SNV(SNV(segment.chromosome,
-					Position(segment.chromosome,segment.start.position+1,sample.config), #TODO
-						D-d,
-						d,
-						"", #TODO
+					segment.add_snv(SNV(segment.chromosome,
+                                        Position(segment.chromosome,segment.start.position+1,sample.config),  #TODO
+                                        D - d,
+                                        d,
+						"",  #TODO
 						"")) #TODO
 
 	sample.mutation_rate= sample.get_mutation_rate(sample.segments)

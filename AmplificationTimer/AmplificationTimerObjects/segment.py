@@ -4,36 +4,37 @@ from .position import Position
 from .gene import Gene
 from .snv import SNV
 import math
+import copy
 
 
 @class_equality_attributes
-class Segment():
+class Segment:
     """
-	Class representing a genomic segment with constant copy number
+    Class representing a genomic segment with constant copy number
 
-	...
+    ...
 
-	Attributes
-	----------
-	clinical_data: dic
-	config: dic
-	chromosome: Chromosome
-	start: Position
-	end: Position
-	minor_cn: int
-	major_cn: int
-	SNVs: list of SNV
-	genes: list of Gene
-	
-	Methods
-	-------
-	init:
-	match_genes:
-	add_SNV:
-	get_length:
-	get_ploidy_healthy:
-	to_dict: returns a copy of the object encoded as dictionary
-	"""
+    Attributes
+    ----------
+    clinical_data: dic
+    config: dic
+    chromosome: Chromosome
+    start: Position
+    end: Position
+    minor_cn: int
+    major_cn: int
+    SNVs: list of SNV
+    genes: list of Gene
+
+    Methods
+    -------
+    init:
+    match_genes:
+    add_snv:
+    get_length:
+    get_ploidy_healthy:
+    to_dict: returns a copy of the object encoded as dictionary
+    """
 
     def __init__(self, data, config, clinical_data, match_genes=False):
         self.clinical_data = clinical_data
@@ -55,7 +56,7 @@ class Segment():
         for snv in data.get('snvs', []):
             chromosome = Chromosome(snv['chromosome'])
             position = Position(chromosome, snv['pos'], self.config)
-            self.add_SNV(SNV(chromosome,
+            self.add_snv(SNV(chromosome,
                              position,
                              snv['ref_count'],
                              snv['alt_count'],
@@ -79,8 +80,8 @@ class Segment():
             if gene.biotype == 'protein_coding':
                 self.genes.append(Gene(gene, self.config))
 
-    def add_SNV(self, SNV):
-        self.SNVs.append(SNV)
+    def add_snv(self, snv):
+        self.SNVs.append(snv)
 
     def to_dict(self):
         dic = dict()
@@ -97,6 +98,9 @@ class Segment():
     def get_length(self):
         return self.end.position - self.start.position
 
+    def get_tot_cn(self):
+        return self.minor_cn + self.major_cn
+
     def get_ploidy_healthy(self):
         if self.chromosome.chromosome == 'Y':
             if self.clinical_data['inferred_sex'] == 'male':
@@ -110,3 +114,21 @@ class Segment():
                 return 1
         else:
             return 2
+
+    def subset(self, chromosome,start_pos, end_pos):
+        if str(self.chromosome) != str(chromosome):
+            return None
+        elif end_pos <= self.start.position:
+            return None
+        elif start_pos >= self.end.position:
+            return None
+        else:
+            segment = copy.deepcopy(self)
+            segment.start = Position(segment.chromosome,max(start_pos,self.start.position),segment.config)
+            segment.end = Position(segment.chromosome,min(end_pos, self.end.position),segment.config)
+            snvs = copy.copy(segment.SNVs)
+            segment.SNVs = []
+            for snv in snvs:
+                if segment.start <= snv.pos <=  segment.end:
+                    segment.add_snv(snv)
+            return segment
