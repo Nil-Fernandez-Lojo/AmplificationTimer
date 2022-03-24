@@ -1,10 +1,14 @@
-from AmplificationTimerObjects import Chromosome,Position
+from .chromosome import Chromosome
+from .position import Position
+import math
 
 def compute_normalised_mu_one_window(segments,rho):
     n_snv = 0
     n_bases = 0
     for seg in segments:
         tot_cn = seg.get_tot_cn()
+        if (math.isnan(tot_cn)) or (tot_cn == 0):
+            continue
         n_bases += tot_cn * seg.get_length()
         for snv in seg.snvs:
             tot_count = snv.get_tot_count()

@@ -11,6 +11,7 @@ from .position import Position
 from .segment import Segment
 from .mutation_rate import MutationRate
 from .plot import plot_cn
+from .compute_normalised_mu import compute_normalised_mu_one_window
 
 
 @class_equality_attributes
@@ -48,6 +49,7 @@ class Sample:
             self.config["path_folder_subclonal_structure"] / (self.name + self.config['suffix_subclonal_structure']),
             sep='\t')
         self.amplifications = self.get_amplifications(self.segments, self.threshold_amplification)
+        self.normalised_mu = compute_normalised_mu_one_window(self.segments,self.clinical_data['purity'])
 
     def load_cnas(self):
         df = pd.read_csv(self.config['path_folder_cna'] / (self.name + self.config['suffix_cnas']), sep='\t')
@@ -260,6 +262,8 @@ class Sample:
                                                       self.subclonal_structure)))
             self.amplifications[-1].set_oncogenes()  # TODO information is there, shouldn't need to search again
 
+        self.normalised_mu = data['normalised_mu']
+
     def to_dict(self):
         dic = dict()
         dic['clinical_data'] = self.clinical_data.copy()
@@ -270,6 +274,7 @@ class Sample:
         dic['amplifications'] = [amplification.to_dict() for amplification in self.amplifications]
         dic['mutation_rate'] = self.mutation_rate.to_dict()
         dic['subclonal_structure'] = self.subclonal_structure.to_dict('records')
+        dic['normalised_mu'] = self.normalised_mu
         return dic
 
     def save(self):

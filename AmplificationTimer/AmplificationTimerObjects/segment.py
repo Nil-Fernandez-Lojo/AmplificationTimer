@@ -171,6 +171,15 @@ class Segment:
                 list_snvs.append(snv)
         return list_snvs
 
+    def get_n_snvs_max_1_copy(self,only_clock_like_SNVs):
+        snvs = self.get_filtered_snvs(only_clock_like_SNVs,False)
+        n = 0
+        for s in snvs:
+            if s.multiplicity_accepted(self.clinical_data['purity'], self.get_tot_cn(), self.get_ploidy_healthy(), 1,
+                                       alternative='greater'):
+                n += 1
+        return n
+
     def subset(self, chromosome,start_pos, end_pos):
         if str(self.chromosome) != str(chromosome):
             return None

@@ -5,8 +5,7 @@ from .chromosome import Chromosome
 from .mutation_rate import MutationRate
 from .segment import Segment
 from .plot import plot_cn
-from .gene import find_most_common_oncogenes
-
+from .compute_normalised_mu import compute_normalised_mu_one_window
 
 @class_equality_attributes
 class Amplification:
@@ -40,6 +39,7 @@ class Amplification:
                                               amplification_dict['mutation_rate']['n_1_0_ctpg'],
                                               amplification_dict['mutation_rate']['n_1_1_ctpg'])
             self.subclonal_structure = pd.DataFrame.from_dict(amplification_dict['subclonal_structure'])
+            self.normalised_mu = amplification_dict['normalised_mu']
         else:
             self.chromosome = chromosome
             self.arm = arm
@@ -51,6 +51,7 @@ class Amplification:
             self.subclonal_structure = subclonal_structure
             for segment in self.segments:
                 segment.flag_intermediate_snvs()
+            self.normalised_mu = compute_normalised_mu_one_window(self.segments, self.clinical_data['purity'])
 
         # TODO should not be recomputed each time
         self.oncogenes = []
@@ -175,6 +176,7 @@ class Amplification:
             dic['oncogene_type'] = ''
         else:
             dic['oncogene_type'] = self.oncogene_type
+        dic['normalised_mu'] = self.normalised_mu
         # TODO: not good practice, should change this:
         # self.config is not added since it is loaded with load_config
         return dic
