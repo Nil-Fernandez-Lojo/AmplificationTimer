@@ -24,7 +24,10 @@ if args.add_context:
     margin = args.rel_margin * (amplification.segments[-1].end.position - amplification.segments[0].start.position)
     start_pos = amplification.segments[0].start.position - margin
     max_bases = (amplification.segments[-1].end.position - amplification.segments[0].start.position) + 2 * margin
-
+    if args.add_oncogenes:
+        oncogenes = amplification.oncogenes
+    else:
+        oncogenes = None
     s.plot_cn_profile(add_snvs=args.add_snvs,
                       total_cn=args.total_cn,
                       chromosome=amplification.chromosome,
@@ -32,6 +35,7 @@ if args.add_context:
                       max_bases=max_bases,
                       plot_threshold_amp=True,
                       differentiate_snv_type=args.mark_clock_like_snvs,
+                      oncogenes=oncogenes,
                       title=args.title,
                       ax=ax)
 else:
@@ -41,6 +45,7 @@ else:
                        plot_threshold_amp=True,
                        title=args.title,
                        differentiate_snv_type=args.mark_clock_like_snvs,
+                       add_oncogenes = args.add_oncogenes,
                        ax=ax)
 plt.show()
 

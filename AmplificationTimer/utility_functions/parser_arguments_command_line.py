@@ -2,6 +2,8 @@ import argparse
 import numpy as np
 from pathlib import Path
 
+
+
 def parse_arguments_plot(plot_type):
     parser = argparse.ArgumentParser()
     parser.add_argument("samplename", type=str, help="sample to plot")
@@ -25,6 +27,9 @@ def parse_arguments_plot(plot_type):
                             help='with this flag, segments non amplified in between amplified segments are not plotted')
         parser.add_argument('--rel_margin', nargs='?', default=0.1, type=float,
                             help='fraction of nucleotides before and after the amplification added to the plot')
+        parser.add_argument('--no_oncogenes', dest='add_oncogenes',action='store_const',
+                            const=False, default=True,
+                            help='with this flag, the oncogenes are not indicated on the plot')
     parser.add_argument('--path_save', nargs='?', default=None, type=str,
                         help='path to store figure, if not specified, the figure is not stored')
     parser.add_argument('--mark_clock_like_snvs', nargs='?', default=True, type=bool,
@@ -74,16 +79,26 @@ def parse_arguments_simulation():
 
 def parse_arguments_inference():
     parser = argparse.ArgumentParser()
+    parser.add_argument('model_index', type=int,
+                        help='model used for the inference')
+    parser.add_argument('--mu_beta_prior', dest='mu_ml', action='store_const',
+                        const=False, default=True,
+                        help='with this flag, no modelling of subclones')
     parser.add_argument('--no_modelling_subclonality', dest='subclonality_modelled', action='store_const',
                         const=False, default=True,
                         help='with this flag, no modelling of subclones')
+
     parser.add_argument('--no_filter_APOBEC', dest='filter_APOBEC', action='store_const',
                         const=False, default=True,
                         help='with this flag, no filter APOBEC SNVs')
     parser.add_argument('--only_clock_like_SNVs', dest='only_clock_like_SNVs', action='store_const',
                         const=True, default=False,
                         help='with this flag, only (C->T)pG snvs are used')
-    parser.add_argument('model_index', type=int,
-                        help='model used for the inference')
     args = parser.parse_args()
     return args
+
+# def parse_arguments_inference():
+#     parser = argparse.ArgumentParser()
+#
+#     args = parser.parse_args()
+#     return args

@@ -1,31 +1,27 @@
 import pymc3 as pm
-import arviz as az
 import numpy as np
 from scipy.special import betainc
-from scipy.special import beta as beta_function
-from scipy.stats import beta, binomtest, binom
-import matplotlib.pyplot as plt
-
-import theano.tensor as tt
-
-p_value_threshold = 0.05
-
-
-# TODO: should actually take bayesian approach for mutation rate to avoid mu_ML = 0, now just trick of mu = epsilon if mu_ML = 0
-
+from scipy.stats import beta
 
 class Model():
-    def __init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs):
+    def __init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs,mu_ml):
+        self.mu_ml = mu_ml
         self.amplification = amplification
         self.cores = cores
         self.subclonality_modelled = subclonality_modelled
         self.rho = subclonal_structure["fraction_total_cells"][0]
+        a , b = mu.get_beta_posterior_parameters(only_clock_like_SNVs)
         if subclonality_modelled:
             self.fSNV = subclonal_structure["n_snvs"] / subclonal_structure["n_snvs"].sum()
             self.fraction_tumor_cells_subclones = subclonal_structure["fraction_cancer_cells"]
             self.mu_clonal_ML = mu.get_ml(only_clock_like_SNVs) * self.fSNV[0]
+            # TODO this is definitely not clean
+            self.beta_prior_clonal_alpha = (a-1) * self.fSNV[0] + 1
+            self.beta_prior_clonal_beta = b + (a-1) *(1 -self.fSNV[0])
         else:
             self.mu_clonal_ML = mu.get_ml(only_clock_like_SNVs)
+            self.beta_prior_clonal_alpha = a
+            self.beta_prior_clonal_beta = b
         self.model = pm.Model()
 
     def get_MCMC_samples_posterior(self, n_samples):
@@ -43,45 +39,32 @@ class Model():
 class Model1(Model):
     # Only looks at mutations that are on all copies
     # Hard assignation of mutation state copy number (i.e. before amplification)
-    # ML estinate of mu
 
     def __init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, filter_APOBEC,
-                 only_clock_like_SNVs):
-        Model.__init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs)
+                 only_clock_like_SNVs,mu_ml):
+        Model.__init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs,mu_ml)
         self.N = 0
         self.L = 0
-        for segment in amplification.segments:
-            print("SNVs in segment", len(segment.SNVs))
+        for segment in amplification.get_non_flagged_segments():
             M = segment.major_cn
             T = segment.major_cn + segment.minor_cn
             ploidy_nc = segment.get_ploidy_healthy()
-            p_all = self.rho * M / (T * self.rho + ploidy_nc * (1 - self.rho))
-            p_1 = self.rho / (T * self.rho + ploidy_nc * (1 - self.rho))
-            for SNV in segment.SNVs:
-                if (SNV.alt_count + SNV.ref_count == 0): continue
-                if (only_clock_like_SNVs and (not SNV.clock_like())):
-                    continue
-                print("d", SNV.alt_count, "D", SNV.alt_count + SNV.ref_count)
-                if filter_APOBEC:
-                    if binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, p_all,
-                                 alternative='less').pvalue > p_value_threshold:
-                        self.N += 1
-                else:
-                    likelihood_1 = binom.pmf(SNV.alt_count, SNV.alt_count + SNV.ref_count, p_1)
-                    likelihood_all = binom.pmf(SNV.alt_count, SNV.alt_count + SNV.ref_count, p_all)
-                    if likelihood_all > likelihood_1:
-                        self.N += 1
+            for snv in segment.get_filtered_snvs(only_clock_like_SNVs,filter_APOBEC):
+                likelihood_1 = snv.get_likelihood_multiplicity(self.rho, T, ploidy_nc, 1)
+                likelihood_all = snv.get_likelihood_multiplicity(self.rho, T, ploidy_nc, M)
+                if likelihood_all > likelihood_1:
+                    self.N += 1
             self.L += segment.get_length()
-            print("self.N end", self.N)
-        print("N", self.N, "L", self.L, "mu", self.mu_clonal_ML)
         self.model_definition()
 
     def model_definition(self):
-        # mu_alpha, mu_beta = self.mu.get_beta_posterior_parameters()
-        # mu = pm.Beta("mu", alpha= mu_alpha, beta = mu_beta)
         with self.model:
             t = pm.Uniform("t", lower=0, upper=1)
-            N_obs = pm.Binomial("N", n=self.L, p=self.mu_clonal_ML * t, observed=self.N)
+            if self.mu_ml:
+                mu = self.mu_clonal_ML
+            else:
+                mu = pm.Beta("mu", alpha=self.beta_prior_clonal_alpha, beta = self.beta_prior_clonal_beta)
+            N_obs = pm.Binomial("N", n=self.L, p=mu * t, observed=self.N)
 
     def get_analytical_posterior(self, t):
         return (self.mu_clonal_ML * beta.pdf(t * self.mu_clonal_ML, self.N, self.L - self.N) / (
@@ -90,12 +73,12 @@ class Model1(Model):
 
 class Model2(Model):
     def __init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, filter_APOBEC,
-                 only_clock_like_SNVs):
-        Model.__init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs)
-        self.n_segments = len(amplification.segments)
+                 only_clock_like_SNVs,mu_ml):
+        Model.__init__(self, amplification, mu, subclonal_structure, subclonality_modelled, cores, only_clock_like_SNVs,mu_ml)
+        self.n_segments = len(amplification.get_non_flagged_segments())
         n_snvs = 0
-        for segment in amplification.segments:
-            n_snvs += len(segment.SNVs)
+        for segment in amplification.get_non_flagged_segments():
+            n_snvs += len(segment.snvs)
 
         # self.N0 = np.zeros(n_segments)
         self.M_segment = np.zeros(self.n_segments)
@@ -114,23 +97,16 @@ class Model2(Model):
             self.q = np.zeros((n_snvs, 2))
 
         c_snvs = 0
-        for i, segment in enumerate(amplification.segments):
+        for i, segment in enumerate(amplification.get_non_flagged_segments()):
             ploidy_nc = segment.get_ploidy_healthy()
             # self.N0[i] = segment.get_length()-len(segment.SNVs)
             self.M_segment[i] = segment.major_cn
-            for SNV in segment.SNVs:
-                if (SNV.alt_count + SNV.ref_count == 0): continue
-                if (only_clock_like_SNVs and (not SNV.clock_like())):
-                    continue
-                q_clonal_one = self.rho / ((segment.major_cn + segment.minor_cn) * self.rho + ploidy_nc * (
-                            1 - self.rho))  # 1 copy clonal
-                q_clonal_all = q_clonal_one * segment.major_cn  # all copies clonal
-                if (not filter_APOBEC) or (binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_all,
-                                                     alternative='less').pvalue > p_value_threshold) or (
-                        binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, q_clonal_one,
-                                  alternative='greater').pvalue > p_value_threshold):
-                    self.d[c_snvs] = SNV.alt_count
-                    self.D[c_snvs] = SNV.alt_count + SNV.ref_count
+            for snv in segment.get_filtered_snvs(only_clock_like_SNVs,filter_APOBEC):
+                q_clonal_one = snv.get_p_read_alt(self.rho, segment.get_tot_cn(), ploidy_nc, 1)
+                q_clonal_all = snv.get_p_read_alt(self.rho, segment.get_tot_cn(), ploidy_nc, segment.major_cn)
+                if (not snv.intermediate_cn) or (not filter_APOBEC):
+                    self.d[c_snvs] = snv.alt_count
+                    self.D[c_snvs] = snv.alt_count + snv.ref_count
                     self.M_snv[c_snvs] = segment.major_cn
                     self.m_snv[c_snvs] = segment.minor_cn
                     self.matrix_segment_to_snv[c_snvs, i] = 1
@@ -140,7 +116,7 @@ class Model2(Model):
                         for j in range(1, len(subclonal_structure.index)):
                             self.q[c_snvs, j + 1] = self.q[c_snvs, 0] * self.fraction_tumor_cells_subclones[j]
                     c_snvs += 1
-        print("total snvs:", n_snvs, "snvs kept:", c_snvs)
+
         # Only keep the first entries since some snv were discarded
         self.M_snv = self.M_snv[:c_snvs, :]
         self.m_snv = self.m_snv[:c_snvs, :]
@@ -150,9 +126,6 @@ class Model2(Model):
         self.matrix_segment_to_snv = self.matrix_segment_to_snv[:c_snvs, :]
         if subclonality_modelled:
             self.fSNV_subclonal_matrix = self.fSNV_subclonal_matrix[:c_snvs, :]
-            if c_snvs > 0:
-                print(self.fSNV[0], self.fSNV_subclonal_matrix[0, :])
-                print(self.q)
         self.model_definition()
 
     def model_definition(self):

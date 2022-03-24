@@ -95,7 +95,7 @@ for samplename in list_samplenames:
 			for segment_a in a.segments:
 				for segment in s.segments:
 					if (segment_a.chromosome.c == segment.chromosome.c) and (segment_a.start.position == segment.start.position):
-						segment.SNVs = segment_a.SNVs
+						segment.snvs = segment_a.snvs
 						break
 
 			s.plot_cn(add_snvs=add_snvs,

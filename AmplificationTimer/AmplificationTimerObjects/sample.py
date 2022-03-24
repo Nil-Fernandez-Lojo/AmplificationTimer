@@ -36,8 +36,8 @@ class Sample:
                 self.clinical_data[key] = bool(self.clinical_data[key])
         self.segments = self.load_cnas()
         snvs, self.sample_type = self.load_snvs()  # TODO : what to do if gray list
+        self.call_kataegis(snvs,self.config["window_size_kataegis"], self.config["mean_distance_kataegis_threshold"])
         self.match_snvs_to_segments(snvs)
-
         self.major_cn_mode = self.get_major_cn_mode(self.segments)
         if self.major_cn_mode <= 1:
             self.threshold_amplification = self.config['threshold_amplification_no_WGD']
@@ -79,7 +79,7 @@ class Sample:
             return [], 'missing'
 
     def parse_vcf(self, vcf_path):
-        df = pd.read_csv(vcf_path, sep='\t', comment='#', header=None, names=self.config['vcf_column_names'])
+        df = pd.read_csv(vcf_path, sep='\t', comment='#', header=None, names=self.config['vcf_column_names'], dtype=self.config['vcf_column_types'])
         snvs = []
         for index, row in df.iterrows():
 
@@ -124,6 +124,20 @@ class Sample:
                 self.segments[i].add_snv(snv)
 
     @staticmethod
+    def call_kataegis(snvs,window_size,mean_distance_kataegis_threshold):
+        for snv in snvs:
+            snv.in_kataegis = False
+
+        for i in range(len(snvs)-window_size):
+            j = i+window_size-1
+            snv_start = snvs[i]
+            snv_end = snvs[j]
+            distance = snv_end.pos.absolute_position - snv_start.pos.absolute_position
+            if distance < mean_distance_kataegis_threshold * window_size:
+                for k in range(i,j):
+                    snvs[k].in_kataegis = True
+
+    @staticmethod
     def get_major_cn_mode(segments, max_cn=5):
         # returns mode of major copy number (where all copy numbers higher than max_cn are mapped back to max_cn)
         n_bases_cn = [0 for _ in range(max_cn + 1)]
@@ -133,32 +147,30 @@ class Sample:
         return n_bases_cn.index(max(n_bases_cn))
 
     def get_amplifications(self, segments, threshold_amplification):
-        potential_amplifications = dict()
-        for chromosome in (list(range(1, 23)) + ['X', 'Y']):
-            potential_amplifications[str(chromosome)] = dict()
-            for arm in ['p', 'q']:
-                potential_amplifications[str(chromosome)][arm] = Amplification(Chromosome(chromosome),
-                                                                               arm,
-                                                                               [],
-                                                                               threshold_amplification,
-                                                                               self.clinical_data,
-                                                                               self.config,
-                                                                               self.mutation_rate,
-                                                                               self.subclonal_structure)
+        potential_amplifications_segments = dict()
+        for chromosome in self.config["list_chromosome"]:
+            potential_amplifications_segments[chromosome] = {'p':[],'q':[]}
 
         for segment in segments:
             if segment.major_cn >= threshold_amplification:
                 if segment.start.arm != segment.end.arm:
                     print('Warning, amplified segment that spans both arms', self.name, segment.start, segment.end)
                 segment.match_genes()
-                potential_amplifications[segment.chromosome.chromosome][segment.start.arm].add_segment(segment)
+                potential_amplifications_segments[segment.chromosome.chromosome][segment.start.arm].append(segment)
 
         amplifications = []
-        for chromosome in (list(range(1, 23)) + ['X', 'Y']):
+        for chromosome in self.config["list_chromosome"]:
             for arm in ['p', 'q']:
-                if len(potential_amplifications[str(chromosome)][arm].segments) != 0:
-                    potential_amplifications[str(chromosome)][arm].set_oncogenes()
-                    amplifications.append(potential_amplifications[str(chromosome)][arm])
+                if len(potential_amplifications_segments[chromosome][arm]) != 0:
+                    amplifications.append(Amplification(Chromosome(chromosome),
+                      arm,
+                      potential_amplifications_segments[chromosome][arm],
+                      threshold_amplification,
+                      self.clinical_data,
+                      self.config,
+                      self.mutation_rate,
+                      self.subclonal_structure))
+
         return amplifications
 
     @staticmethod
@@ -173,15 +185,15 @@ class Sample:
         for segment in segments:
             if segment.major_cn == 1:
                 if segment.minor_cn == 0:
-                    n_1_0 += len(segment.SNVs)
+                    n_1_0 += len(segment.snvs)
                     l_1_0 += segment.get_length()
-                    for snv in segment.SNVs:
+                    for snv in segment.snvs:
                         if snv.clock_like():
                             n_1_0_ctpg += 1
                 else:
-                    n_1_1 += len(segment.SNVs)
+                    n_1_1 += len(segment.snvs)
                     l_1_1 += segment.get_length()
-                    for snv in segment.SNVs:
+                    for snv in segment.snvs:
                         if snv.clock_like():
                             n_1_1_ctpg += 1
 
@@ -197,6 +209,7 @@ class Sample:
                         title=None,
                         path_save=None,
                         differentiate_snv_type=True,
+                        oncogenes=None,
                         ax=None):
         if plot_threshold_amp:
             threshold_amplification = self.threshold_amplification
@@ -214,6 +227,7 @@ class Sample:
                 title=title,
                 path_save=path_save,
                 differentiate_snv_type=differentiate_snv_type,
+                oncogenes=oncogenes,
                 link_segments=True,
                 ax=ax)
 

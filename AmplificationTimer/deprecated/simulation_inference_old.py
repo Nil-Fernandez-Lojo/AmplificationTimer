@@ -53,9 +53,9 @@ def simulation_inference_using_prior(sample_,
 	rho = sample.clinical_data['purity']
 	amplification = sample.amplifications[amplification_idx]
 	for segment in sample.segments:
-		segment.SNVs = []
+		segment.snvs = []
 	for segment in amplification.segments:
-		segment.SNVs = []
+		segment.snvs = []
 
 	if nrpcc == "same":
 		nrpcc = sample.clinical_data["nrpcc"]

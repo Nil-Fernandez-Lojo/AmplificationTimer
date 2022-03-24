@@ -55,7 +55,7 @@ for expected_mut in args.expected_mut_list:
                                                                   nrpcc='same')
         n_snv = 0
         for s in amplification.segments:
-            n_snv += len(s.SNVs)
+            n_snv += len(s.snvs)
         print(expected_mut, n_snv)
         continue
         trace = inference_t(amplification,

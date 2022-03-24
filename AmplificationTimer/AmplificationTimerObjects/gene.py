@@ -42,6 +42,22 @@ class Gene:
                     if not math.isnan(i):
                         self.entrez_id.append(int(i))
 
+    def check_if_oncogene(self):
+        if isinstance(self.entrez_id, list):
+            list_entrez_id = self.entrez_id
+        else:
+            list_entrez_id = [self.entrez_id]
+        for entrez_id in list_entrez_id:
+            if entrez_id in self.config['oncogenes']["Entrez GeneId"].values:
+                return True
+        return False
+
+    def check_if_driver_gain(self, cancer_type):
+        return self.name in self.config['drivers'][cancer_type]['gain'].keys()
+
+    def check_if_driver_rest(self, cancer_type):
+        return self.name in self.config['drivers'][cancer_type]['rest'].keys()
+
     def to_dict(self):
         dic = dict()
         dic['name'] = self.name
@@ -53,3 +69,23 @@ class Gene:
         dic['strand'] = self.strand
         dic['entrez_id'] = self.entrez_id
         return dic
+
+def find_most_common_oncogenes(oncogene_type,genes,config,cancer_type=None):
+    # only filters oncogenes for known drivers of the cancer type, not for the plain list of oncogenes
+    if oncogene_type == 'oncogene':
+        return genes
+    else:
+        type_mutation = 'gain' if oncogene_type == 'driver_gain' else 'rest'
+        dict_counts = config['drivers'][cancer_type][type_mutation]
+        count = 0
+        most_common_oncogenes = []
+        print(oncogene_type)
+        print([g.name for g in genes])
+        print(dict_counts)
+        for g in genes:
+            if dict_counts[g.name] == count:
+                most_common_oncogenes.append(g)
+            if dict_counts[g.name]>count:
+                count = dict_counts[g.name]
+                most_common_oncogenes = [g]
+    return most_common_oncogenes

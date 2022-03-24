@@ -43,13 +43,13 @@ class Model1(Model):
 		self.N = 0
 		self.L = 0
 		for segment in amplification.segments:
-			print("SNVs in segment",len(segment.SNVs))
+			print("SNVs in segment", len(segment.snvs))
 			M = segment.major_cn
 			T = segment.major_cn + segment.minor_cn
 			ploidy_nc = segment.get_ploidy_healthy()
 			p_all = self.rho*M/(T*self.rho+ploidy_nc*(1-self.rho))
 			p_1 = self.rho/(T*self.rho+ploidy_nc*(1-self.rho))
-			for SNV in segment.SNVs:
+			for SNV in segment.snvs:
 				if (SNV.alt_count + SNV.ref_count == 0): continue
 				if filter_APOBEC:
 					if binomtest(SNV.alt_count, SNV.alt_count + SNV.ref_count, p_all,alternative = 'less').pvalue > p_value_threshold:
@@ -82,7 +82,7 @@ class Model2(Model):
 		self.n_segments = len(amplification.segments)
 		n_snvs = 0
 		for segment in amplification.segments:
-			n_snvs+= len(segment.SNVs)
+			n_snvs+= len(segment.snvs)
 
 		#self.N0 = np.zeros(n_segments)
 		self.M_segment = np.zeros(self.n_segments)
@@ -106,7 +106,7 @@ class Model2(Model):
 			#self.N0[i] = segment.get_length()-len(segment.SNVs)
 			self.M_segment[i] = segment.major_cn
 			SNVs_kept = []
-			for SNV in segment.SNVs:
+			for SNV in segment.snvs:
 				q_clonal_one = self.rho/((segment.major_cn + segment.minor_cn)*self.rho+ploidy_nc*(1-self.rho)) # 1 copy clonal
 				q_clonal_all = q_clonal_one * segment.major_cn #all copies clonal
 				if (SNV.alt_count + SNV.ref_count == 0): continue
@@ -123,7 +123,7 @@ class Model2(Model):
 						for j in range(1,len(subclonal_structure.index)):
 							self.q[c_snvs,j+1] = self.q[c_snvs,0] * self.fraction_tumor_cells_subclones[j]
 					c_snvs+=1
-				segment.SNVs = SNVs_kept
+				segment.snvs = SNVs_kept
 		print("total snvs:", n_snvs,"snvs kept:",c_snvs)
 		#Only keep the first entries since some snv were discarded
 		self.M_snv = self.M_snv[:c_snvs,:]

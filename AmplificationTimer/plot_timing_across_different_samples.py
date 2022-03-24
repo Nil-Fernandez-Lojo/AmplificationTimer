@@ -10,8 +10,8 @@ from statistics_amplifications import filter_amplifications_dict_by_type
 from AmplificationTimerObjects import Amplification
 
 must_be_preferred = False
-cancer_type = 'Breast-AdenoCA' # put 'all' if no filter
-oncogene = 'MYC' # put 'all' if no filter
+cancer_type = 'Liver-HCC' # put 'all' if no filter
+oncogene = 'YWHAZ' # put 'all' if no filter
 path_model1 = Path("../inference_results/inferred_times/traces/filter_APOBEC/subclonality_modelled/all_SNVs_types/Model1/summary")
 path_model4 = Path("../inference_results/inferred_times/traces/filter_APOBEC/subclonality_modelled/all_SNVs_types/Model4/summary")
 

@@ -9,9 +9,6 @@ import matplotlib.pyplot as plt
 args = parse_arguments_plot('sample')
 path_config = "../config.json"
 
-# TODO add oncogenes
-#oncogene = [(69201952, 69244466, 'MDM2')]  # position in the chr and name
-
 # TODO not clean
 path_preprocessed_data = Path("../preprocessed_data/samples") / (args.samplename + '.json')
 load_genome_into_config = not path_preprocessed_data.exists()

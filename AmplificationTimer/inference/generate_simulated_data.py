@@ -27,9 +27,9 @@ def generate_simulated_data_under_prior(sample_,
 
     rho = sample.clinical_data['purity']
     for segment in sample.segments:
-        segment.SNVs = []
+        segment.snvs = []
     for segment in amplification.segments:
-        segment.SNVs = []
+        segment.snvs = []
 
     if nrpcc == "same":
         nrpcc = sample.clinical_data["nrpcc"]

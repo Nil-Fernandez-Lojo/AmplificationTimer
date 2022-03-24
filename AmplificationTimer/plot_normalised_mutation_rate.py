@@ -3,11 +3,11 @@ from AmplificationTimerObjects import Position, Chromosome, Sample, plot_normali
 import matplotlib.pyplot as plt
 
 sliding_window_size = 10**7
-samplename = 'f82d213f-caa7-fd59-e040-11ac0d483e46'
+#samplename = 'f82d213f-caa7-fd59-e040-11ac0d483e46'
 #samplename = '25224aa0-cfdd-48ec-92e5-8f3992a3e574'
-#'84e601b7-dfa5-4cd5-9fef-07f03967a0d4'
-#'fc950c33-faa4-0241-e040-11ac0c486786'
-add_snvs = False
+#samplename = '84e601b7-dfa5-4cd5-9fef-07f03967a0d4'
+samplename = 'fc950c33-faa4-0241-e040-11ac0c486786'
+add_snvs = True
 total_cn = True
 
 def compute_normalised_mu_one_window(segments,rho):
@@ -16,7 +16,7 @@ def compute_normalised_mu_one_window(segments,rho):
     for seg in segments:
         tot_cn = seg.get_tot_cn()
         n_bases += tot_cn * seg.get_length()
-        for snv in seg.SNVs:
+        for snv in seg.snvs:
             tot_count = snv.get_tot_count()
             if tot_count == 0:
                 # TODO I have to investigate this
@@ -57,7 +57,7 @@ def compute_normalised_mu(sample):
 
 
 path_config = "../config.json"
-config = load_config(path_config, load_genome_into_config=True)
+config = load_config(path_config, load_genome_into_config=False)
 sample = Sample(config, samplename, save=False)
 pos,normalised_mu = compute_normalised_mu(sample)
 

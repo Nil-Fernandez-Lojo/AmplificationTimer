@@ -62,7 +62,7 @@ class MutationRate:
         else:
             n_1_0 = self.n_1_0
             n_1_1 = self.n_1_1
-        return n_1_0 + n_1_1 + 1, self.l_1_0 + 2 * self.l_1_1 + 1
+        return n_1_0 + n_1_1 + 1, self.l_1_0 + 2 * self.l_1_1 - (n_1_0 + n_1_1 + 1) + 1
 
     def to_dict(self):
         dic = dict()

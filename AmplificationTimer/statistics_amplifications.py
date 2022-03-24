@@ -8,7 +8,7 @@ from utility_functions import load_config
 def get_count_oncogene(amplifications_filtered):
     count_oncogene = {}
     for a in amplifications_filtered:
-        for gene in a.potential_driver_oncogenes:
+        for gene in a.oncogenes:
             count_oncogene[gene.name] = count_oncogene.get(gene.name, 0) + 1
     return count_oncogene
 
@@ -25,7 +25,7 @@ def filter_amplifications_by_type(amplifications, config, cancer_type='all', onc
                 continue
         if oncogene != 'all':
             gene_present = False
-            for gene in a.potential_driver_oncogenes:
+            for gene in a.oncogenes:
                 if gene.name == oncogene:
                     gene_present = True
                     break
@@ -46,7 +46,7 @@ def filter_amplifications_dict_by_type(amplifications_dict, config, cancer_type=
                 continue
         if oncogene != 'all':
             gene_present = False
-            for gene in a_dict['potential_driver_oncogenes']:
+            for gene in a_dict['oncogenes']:
                 if gene['name'] == oncogene:
                     gene_present = True
                     break
@@ -142,7 +142,7 @@ if __name__ == "__main__":
         minor_amplified = False
         for segment in a.segments:
             if segment.minor_cn > 1:
-                if a.threshold_amplification == 10:
+                if a.major_cn_mode > 1:
                     amplifications_high_minor_cn_wgd += 1
                 else:
                     amplifications_high_minor_cn_no_wgd += 1
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                     minor_amplified = True
                 break
 
-        if a.threshold_amplification == 10:
+        if a.major_cn_mode > 1:
             amplifications_wgd_count += 1
 
             add_to_minor_allele_2_WGD = False
@@ -173,13 +173,13 @@ if __name__ == "__main__":
                 if segment.major_cn > major:
                     major = segment.major_cn
             amplifications_with_amplified_minor_allele_M_and_m_cp.append((major, minor))
-        if len(a.potential_driver_oncogenes) == 0:
+        if len(a.oncogenes) == 0:
             amplifications_0_oncogenes += 1
-        elif len(a.potential_driver_oncogenes) == 1:
+        elif len(a.oncogenes) == 1:
             amplifications_1_oncogene += 1
         else:
             amplifications_multiple_oncogenes += 1
-            print(a.clinical_data['histology_pcawg'], [g.name for g in a.potential_driver_oncogenes])
+            print(a.clinical_data['histology_pcawg'], [g.name for g in a.oncogenes])
     print("amplifications_wgd_count:", amplifications_wgd_count)
     print("amplifications_high_minor_cn_wgd:", amplifications_high_minor_cn_wgd)
     print("amplifications_high_minor_cn_no_wgd:", amplifications_high_minor_cn_no_wgd)
