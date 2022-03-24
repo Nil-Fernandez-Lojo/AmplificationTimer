@@ -14,7 +14,7 @@ def compute_normalised_mu_one_window(segments,rho):
             vaf = snv.alt_count/tot_count
             snv_multiplicity = vaf * (tot_cn + ((1 - rho) / rho) * seg.get_ploidy_healthy())
             n_snv+=snv_multiplicity
-    if len(segments) == 0:
+    if n_bases == 0:
         return float('nan')
     else:
         return n_snv/n_bases
