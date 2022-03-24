@@ -1,3 +1,4 @@
 from .load_config import load_config
 from .icgc import icgc
 from .parser_arguments_command_line import parse_arguments_plot,parse_arguments_simulation,parse_arguments_inference
+from .compute_normalised_mu import compute_normalised_mu
