@@ -1,5 +1,5 @@
-from AmplificationTimerObjects import Sample
-from utility_functions import load_config, compute_normalised_mu
+from AmplificationTimerObjects import Sample,compute_normalised_mu
+from utility_functions import load_config
 import json
 sliding_window_size = 10**7
 
