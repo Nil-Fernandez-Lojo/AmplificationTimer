@@ -23,7 +23,7 @@
   "path_filtered_amplifications_folder": "../preprocessed_data/amplifications_filtered/",
   "path_filtered_amplifications_clocklike_folder": "../preprocessed_data/amplifications_filtered_clocklike/",
   "path_known_drivers_PCAWG": "../data/TableS3_panorama_drivers_pcawg_20180110.txt",
-  "cores": 1,
+  "cores": 5,
   "n_chains": 10,
   "n_MCMC_iterations": 10000,
   "threshold_amplification_no_WGD": 5,
