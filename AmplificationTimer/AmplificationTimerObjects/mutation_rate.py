@@ -56,13 +56,14 @@ class MutationRate:
             return (n_1_0 + n_1_1) / (self.l_1_0 + 2 * self.l_1_1)
 
     def get_beta_posterior_parameters(self, only_clock_like=False):
+        # TODO (10**6) should be a parameter
         if only_clock_like:
             n_1_0 = self.n_1_0_ctpg
             n_1_1 = self.n_1_1_ctpg
         else:
             n_1_0 = self.n_1_0
             n_1_1 = self.n_1_1
-        return n_1_0 + n_1_1 + 1, self.l_1_0 + 2 * self.l_1_1 - (n_1_0 + n_1_1 + 1) + 1
+        return n_1_0 + n_1_1 + 1, self.l_1_0 + 2 * self.l_1_1 - (n_1_0 + n_1_1 + 1) + (10**6)
 
     def to_dict(self):
         dic = dict()
