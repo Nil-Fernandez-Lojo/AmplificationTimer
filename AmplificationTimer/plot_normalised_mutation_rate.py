@@ -1,12 +1,12 @@
-from utility_functions import load_config, compute_normalised_mu
-from AmplificationTimerObjects import Position, Chromosome, Sample, plot_normalised_mu
+from utility_functions import load_config
+from AmplificationTimerObjects import Position, Chromosome, Sample, plot_normalised_mu, compute_normalised_mu
 import matplotlib.pyplot as plt
 
 sliding_window_size = 10**7
-#samplename = 'f82d213f-caa7-fd59-e040-11ac0d483e46'
+samplename = 'f82d213f-caa7-fd59-e040-11ac0d483e46'
 #samplename = '25224aa0-cfdd-48ec-92e5-8f3992a3e574'
 #samplename = '84e601b7-dfa5-4cd5-9fef-07f03967a0d4'
-samplename = 'fc950c33-faa4-0241-e040-11ac0c486786'
+#samplename = '6d9d7ffc-c622-11e3-bf01-24c6515278c0'
 add_snvs = True
 total_cn = True
 

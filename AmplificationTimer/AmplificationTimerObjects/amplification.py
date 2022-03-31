@@ -160,7 +160,7 @@ class Amplification:
                 ax=ax)
 
     def get_name(self):
-        return self.clinical_data['samplename'] + str(self.chromosome) + self.arm
+        return self.clinical_data['samplename'] +'_'+ str(self.chromosome) + self.arm
 
     def to_dict(self):
         dic = dict()

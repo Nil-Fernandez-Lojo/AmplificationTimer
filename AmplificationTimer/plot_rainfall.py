@@ -3,7 +3,7 @@ from AmplificationTimerObjects import Sample, plot_rainfall
 import matplotlib.pyplot as plt
 
 #samplename = 'f82d213f-caa7-fd59-e040-11ac0d483e46'
-samplename = '25224aa0-cfdd-48ec-92e5-8f3992a3e574'
+samplename = '4e7cdeda-6dc1-4f17-b853-72a68e5aa7e1'
 #samplename = '84e601b7-dfa5-4cd5-9fef-07f03967a0d4'
 #samplename = 'fc950c33-faa4-0241-e040-11ac0c486786'
 

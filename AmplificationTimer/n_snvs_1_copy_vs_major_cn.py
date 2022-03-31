@@ -19,6 +19,6 @@ for i,file in enumerate(config['path_filtered_amplifications_folder'].glob('*.js
                          'major_cn': segment.major_cn,
                          'minor_cn': segment.minor_cn,
                          'len_seg': segment.get_length(),
-                         'n_snvs_1': segment.get_n_snvs_max_1_copy(only_clock_like_SNVs=only_clock_like_SNVs)})
+                         'n_snvs_1': segment.get_n_snvs_1_copy(only_clock_like_SNVs=only_clock_like_SNVs)})
     with open(out_file, 'w') as buff:
         json.dump(out_dict, buff, indent=4)
